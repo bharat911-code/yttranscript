@@ -41,3 +41,23 @@ for index, video_url in enumerate(video_urls, start=1):
         print(f"⚠️ Error with video {index}: {video_id} — {str(e)}")
 
 print("\n🎉 Finished fetching Hindi transcripts.")
+
+from flask import Flask, request, jsonify
+from youtube_transcript_api import YouTubeTranscriptApi
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route("/transcript", methods=["GET"])
+def transcript():
+    video_id = request.args.get("video_id")
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["hi"])
+        text = " ".join([t["text"] for t in transcript])
+        return jsonify({"transcript": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
